@@ -24,6 +24,7 @@ export default function Layout({
   isLocked = false,
   activeTab = 'scraper',
   setActiveTab,
+  onNavigate,
   onOpenAuth,
   onOpenUpgrade,
   onLogout,
@@ -32,6 +33,18 @@ export default function Layout({
 }) {
   const isPaid = plan === 'paid';
   const isGuest = plan === 'guest' || !user;
+
+  // Safe navigation helper
+  const navigateTo = (path) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.history.pushState(null, '', path);
+      if (path === '/analyzer') setActiveTab('analyzer');
+      else if (path === '/account') setActiveTab('account');
+      else setActiveTab('scraper');
+    }
+  };
 
   // Trial Usage Meter string (supports compact format on mobile screens)
   const getUsageMeterText = (isCompact = false) => {
@@ -100,9 +113,14 @@ export default function Layout({
             )}
 
             {/* Brand Logo */}
-            <div
-              onClick={() => setActiveTab && setActiveTab('scraper')}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo('/');
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', textDecoration: 'none' }}
+              aria-label="InstaScrape Pro Home"
             >
               <div
                 style={{
@@ -125,47 +143,58 @@ export default function Layout({
                   InstaScrape
                 </span>
                 <span className="brand-badge">
-                  Platform
+                  Pro
                 </span>
               </div>
-            </div>
+            </a>
 
             {/* Desktop Navigation Tabs */}
             <nav className="desktop-nav" aria-label="Desktop Navigation">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('scraper');
-                  window.history.pushState(null, '', '/');
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/');
                 }}
                 className={`chip ${activeTab === 'scraper' ? 'chip-active' : ''}`}
-                style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px' }}
+                style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px', textDecoration: 'none' }}
               >
                 Search
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('analyzer');
-                  window.history.pushState(null, '', '/analyzer');
+              </a>
+              <a
+                href="/analyzer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/analyzer');
                 }}
                 className={`chip ${activeTab === 'analyzer' ? 'chip-active' : ''}`}
-                style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px' }}
+                style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px', textDecoration: 'none' }}
               >
                 Analyzer
-              </button>
+              </a>
+              <a
+                href="/resources"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/resources');
+                }}
+                className={`chip ${activeTab === 'resources' || activeTab === 'article' ? 'chip-active' : ''}`}
+                style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px', textDecoration: 'none' }}
+              >
+                Resources
+              </a>
               {user && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('account');
-                    window.history.pushState(null, '', '/account');
+                <a
+                  href="/account"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/account');
                   }}
                   className={`chip ${activeTab === 'account' ? 'chip-active' : ''}`}
-                  style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px' }}
+                  style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '4px 12px', textDecoration: 'none' }}
                 >
                   Account
-                </button>
+                </a>
               )}
             </nav>
           </div>
@@ -387,58 +416,270 @@ export default function Layout({
         {children}
       </main>
 
-      {/* Clean, Non-Messy Footer */}
+      {/* Comprehensive, Crawlable Technical SEO Footer */}
       <footer
         style={{
           borderTop: '1px solid var(--border-subtle)',
-          padding: '24px 20px',
+          padding: '40px 20px 24px 20px',
           marginTop: 'auto',
-          fontSize: '0.78rem',
-          color: 'var(--text-muted)'
+          fontSize: '0.8rem',
+          color: 'var(--text-muted)',
+          background: 'var(--bg-surface)'
         }}
       >
         <div
           style={{
             maxWidth: '1280px',
             margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '32px',
+            marginBottom: '32px'
+          }}
+        >
+          {/* Brand & Purpose Column */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--accent-pink)'
+                }}
+              >
+                <Instagram size={15} />
+              </div>
+              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                InstaScrape Pro
+              </span>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.8rem', marginBottom: '10px' }}>
+              Production-grade Instagram profile analysis and public content research platform.
+            </p>
+            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+              Secure INR billing via Razorpay. Strictly respects privacy settings.
+            </p>
+          </div>
+
+          {/* Tools & Analyzers Column */}
+          <div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-primary)', letterSpacing: '0.04em', marginBottom: '12px' }}>
+              Tools & Analyzers
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li>
+                <a
+                  href="/"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Public Post Viewer
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/instagram-profile-analyzer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/instagram-profile-analyzer');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Profile Analyzer
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/instagram-bio-analyzer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/instagram-bio-analyzer');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Bio Analyzer & Optimizer
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/instagram-profile-audit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/instagram-profile-audit');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Profile Audit Tool
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/instagram-content-research"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/instagram-content-research');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Content Research Suite
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Research & Guides Column */}
+          <div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-primary)', letterSpacing: '0.04em', marginBottom: '12px' }}>
+              Research & Guides
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li>
+                <a
+                  href="/resources"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/resources');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Resources & Articles Hub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/resources/how-to-improve-instagram-bio"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/resources/how-to-improve-instagram-bio');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  How to Improve Your Bio
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/resources/instagram-profile-audit-checklist"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/resources/instagram-profile-audit-checklist');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Profile Audit Checklist
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/resources/make-instagram-profile-professional"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/resources/make-instagram-profile-professional');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Make Your Profile Professional
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/resources/understanding-public-instagram-engagement"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/resources/understanding-public-instagram-engagement');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Public Engagement Benchmarks
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support, Trust & Compliance Column */}
+          <div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-primary)', letterSpacing: '0.04em', marginBottom: '12px' }}>
+              Support & Legal
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li>
+                <a
+                  href="/contact"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/contact');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Contact & Support
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/terms"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/terms');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/privacy"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/privacy');
+                  }}
+                  style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenLegal && onOpenLegal('refund')}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0, fontSize: '0.8rem', textAlign: 'left' }}
+                >
+                  Refund Policy
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Disclaimer & Copyright */}
+        <div
+          style={{
+            maxWidth: '1280px',
+            margin: '0 auto',
+            borderTop: '1px solid var(--border-subtle)',
+            paddingTop: '20px',
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '16px'
+            gap: '12px',
+            fontSize: '0.74rem'
           }}
         >
-          <div>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              InstaScrape — Search and analyze public Instagram content.
-            </p>
-            <p style={{ fontSize: '0.72rem', marginTop: '2px' }}>
-              Subscriptions are billed securely in INR through Razorpay. You are responsible for how you use this service.
-            </p>
+          <div style={{ color: 'var(--text-muted)', maxWidth: '820px', lineHeight: 1.5 }}>
+            InstaScrape Pro is an independent intelligence and analysis platform. We strictly access and evaluate publicly available information. We do not claim to bypass private profile settings, access private media, or violate platform privacy boundaries. InstaScrape Pro is not sponsored by or affiliated with Instagram or Meta Platforms, Inc.
           </div>
-
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => onOpenLegal && onOpenLegal('terms')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0, fontSize: '0.75rem' }}
-            >
-              Terms
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenLegal && onOpenLegal('privacy')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0, fontSize: '0.75rem' }}
-            >
-              Privacy
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenLegal && onOpenLegal('refund')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0, fontSize: '0.75rem' }}
-            >
-              Refunds
-            </button>
+          <div style={{ color: 'var(--text-muted)' }}>
+            © {new Date().getFullYear()} InstaScrape Pro. All rights reserved.
           </div>
         </div>
       </footer>

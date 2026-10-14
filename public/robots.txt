@@ -1,0 +1,31 @@
+# robots.txt for InstaScrape Pro
+# https://instascrape-pro.onrender.com/robots.txt
+
+User-agent: *
+Allow: /
+Allow: /instagram-profile-analyzer
+Allow: /instagram-bio-analyzer
+Allow: /instagram-profile-audit
+Allow: /instagram-content-research
+Allow: /resources
+Allow: /resources/*
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+
+# Disallow internal API endpoints, dashboards, private user data & auth states
+Disallow: /api/
+Disallow: /account
+Disallow: /*?*pending_search=
+Disallow: /*?*token=
+
+# Googlebot specific directives (ensure JS, CSS & image assets are crawlable for rendering)
+User-agent: Googlebot
+Allow: /
+Allow: /src/
+Allow: /assets/
+Disallow: /api/
+Disallow: /account
+
+# Sitemap location
+Sitemap: https://instascrape-pro.onrender.com/sitemap.xml

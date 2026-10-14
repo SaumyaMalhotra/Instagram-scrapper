@@ -26,6 +26,37 @@ import LegalModal from './components/LegalModal.jsx';
 import DetectiveOnboarding from './components/DetectiveOnboarding.jsx';
 import ProfileAnalyzer from './components/ProfileAnalyzer.jsx';
 
+import LandingPageTemplate from './components/seo/LandingPageTemplate.jsx';
+import ResourcesHub from './components/seo/ResourcesHub.jsx';
+import ArticlePage from './components/seo/ArticlePage.jsx';
+import ContactPage from './components/seo/ContactPage.jsx';
+import LegalPage from './components/seo/LegalPage.jsx';
+import { useDocumentHead } from './hooks/useDocumentHead.js';
+import { SEO_PAGES, ARTICLES } from './data/seoData.js';
+
+function resolveRoute(pathname) {
+  if (typeof window === 'undefined') return { tab: 'scraper' };
+  const clean = pathname ? pathname.split('?')[0].replace(/\/+$/, '') || '/' : '/';
+  if (clean === '/' || clean === '') return { tab: 'scraper' };
+  if (clean === '/analyzer') return { tab: 'analyzer' };
+  if (clean === '/account') return { tab: 'account' };
+  if (clean === '/resources') return { tab: 'resources' };
+  if (clean.startsWith('/resources/')) {
+    const slug = clean.replace('/resources/', '');
+    const article = ARTICLES.find((a) => a.slug === slug);
+    if (article) return { tab: 'article', article };
+    return { tab: 'resources' };
+  }
+  if (clean === '/instagram-profile-analyzer') return { tab: 'landing', pageKey: 'profileAnalyzer' };
+  if (clean === '/instagram-bio-analyzer') return { tab: 'landing', pageKey: 'bioAnalyzer' };
+  if (clean === '/instagram-profile-audit') return { tab: 'landing', pageKey: 'profileAudit' };
+  if (clean === '/instagram-content-research') return { tab: 'landing', pageKey: 'contentResearch' };
+  if (clean === '/contact') return { tab: 'contact' };
+  if (clean === '/terms') return { tab: 'terms' };
+  if (clean === '/privacy') return { tab: 'privacy' };
+  return { tab: 'scraper' };
+}
+
 export default function App() {
   const { theme, toggleTheme } = useTheme();
 
@@ -62,34 +93,77 @@ export default function App() {
     null
   );
 
-  // App navigation & Modals state
-  const [activeTab, setActiveTab] = useState(() => {
+  // Route state initialized from window.location.pathname
+  const [routeState, setRouteState] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (window.location.pathname === '/analyzer') return 'analyzer';
-      if (window.location.pathname === '/account') return 'account';
+      return resolveRoute(window.location.pathname);
     }
-    return 'scraper';
+    return { tab: 'scraper' };
   });
+
+  const activeTab = routeState.tab;
+
+  // SPA navigation handler
+  const handleNavigate = useCallback((path) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', path);
+    }
+    setRouteState(resolveRoute(path));
+  }, []);
+
+  // Backwards-compatible tab setter
+  const setActiveTab = useCallback((tab) => {
+    if (tab === 'analyzer') {
+      handleNavigate('/analyzer');
+    } else if (tab === 'account') {
+      handleNavigate('/account');
+    } else if (tab === 'resources') {
+      handleNavigate('/resources');
+    } else {
+      handleNavigate('/');
+    }
+  }, [handleNavigate]);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [authModalConfig, setAuthModalConfig] = useState({ isOpen: false, view: 'signin' });
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
   const [legalModalConfig, setLegalModalConfig] = useState({ isOpen: false, tab: 'terms' });
   const [isDetectiveOnboardingOpen, setIsDetectiveOnboardingOpen] = useState(false);
 
-  // Sync activeTab with browser back/forward buttons
+  // Sync routeState with browser back/forward buttons
   useEffect(() => {
     const handlePopState = () => {
-      if (window.location.pathname === '/analyzer') {
-        setActiveTab('analyzer');
-      } else if (window.location.pathname === '/account') {
-        setActiveTab('account');
-      } else {
-        setActiveTab('scraper');
-      }
+      setRouteState(resolveRoute(window.location.pathname));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Maintain document title, meta tags, and schema for core tabs
+  useDocumentHead({
+    title:
+      activeTab === 'scraper'
+        ? SEO_PAGES.home.title
+        : activeTab === 'analyzer'
+        ? SEO_PAGES.profileAnalyzer.title
+        : activeTab === 'account'
+        ? SEO_PAGES.account.title
+        : undefined,
+    description:
+      activeTab === 'scraper'
+        ? SEO_PAGES.home.description
+        : activeTab === 'analyzer'
+        ? SEO_PAGES.profileAnalyzer.description
+        : undefined,
+    canonical:
+      activeTab === 'scraper'
+        ? SEO_PAGES.home.canonical
+        : activeTab === 'analyzer'
+        ? SEO_PAGES.profileAnalyzer.canonical
+        : undefined,
+    pageKey: activeTab === 'scraper' ? 'home' : activeTab === 'analyzer' ? 'profileAnalyzer' : undefined,
+    noindex: activeTab === 'account'
+  });
 
   // Scraper results & History state
   const [runsHistory, setRunsHistory] = useState([]);
@@ -279,6 +353,7 @@ export default function App() {
       dailyQuota={meData?.dailyQuota}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
+      onNavigate={handleNavigate}
       onOpenAuth={(view) => setAuthModalConfig({ isOpen: true, view: view || 'signin' })}
       onOpenUpgrade={() => setIsSubModalOpen(true)}
       onLogout={handleLogout}
@@ -439,7 +514,7 @@ export default function App() {
         />
       )}
 
-      {/* TAB 2: ACCOUNT & BILLING VIEW */}
+      {/* TAB: ACCOUNT & BILLING VIEW */}
       {activeTab === 'account' && user && (
         <AccountPage
           user={user}
@@ -449,6 +524,46 @@ export default function App() {
           onOpenUpgrade={() => setIsSubModalOpen(true)}
           onAccountDeleted={handleLogout}
         />
+      )}
+
+      {/* TAB: SEO DEDICATED LANDING PAGES */}
+      {activeTab === 'landing' && routeState.pageKey && (
+        <LandingPageTemplate
+          pageKey={routeState.pageKey}
+          seoPage={SEO_PAGES[routeState.pageKey]}
+          onLaunchTool={() => {
+            const targetTab = SEO_PAGES[routeState.pageKey]?.tab || 'scraper';
+            handleNavigate(targetTab === 'analyzer' ? '/analyzer' : '/');
+          }}
+          onNavigate={handleNavigate}
+        />
+      )}
+
+      {/* TAB: RESOURCES & GUIDES HUB */}
+      {activeTab === 'resources' && (
+        <ResourcesHub
+          onNavigate={handleNavigate}
+          onLaunchTool={(tool) => handleNavigate(tool === 'analyzer' ? '/analyzer' : '/')}
+        />
+      )}
+
+      {/* TAB: RESOURCE ARTICLE DETAIL */}
+      {activeTab === 'article' && routeState.article && (
+        <ArticlePage
+          article={routeState.article}
+          onNavigate={handleNavigate}
+          onLaunchTool={(tool) => handleNavigate(tool === 'analyzer' ? '/analyzer' : '/')}
+        />
+      )}
+
+      {/* TAB: CONTACT & SUPPORT */}
+      {activeTab === 'contact' && (
+        <ContactPage onNavigate={handleNavigate} />
+      )}
+
+      {/* TAB: STANDALONE TERMS & PRIVACY */}
+      {(activeTab === 'terms' || activeTab === 'privacy') && (
+        <LegalPage tab={activeTab} onNavigate={handleNavigate} />
       )}
 
       {/* Lightbox / Post Modal */}
