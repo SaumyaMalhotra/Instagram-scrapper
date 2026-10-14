@@ -5,7 +5,8 @@ import {
   Sparkles,
   User,
   LogOut,
-  EyeOff
+  EyeOff,
+  Search
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle.jsx';
 
@@ -32,25 +33,25 @@ export default function Layout({
   const isPaid = plan === 'paid';
   const isGuest = plan === 'guest' || !user;
 
-  // Trial Usage Meter string
-  const getUsageMeterText = () => {
+  // Trial Usage Meter string (supports compact format on mobile screens)
+  const getUsageMeterText = (isCompact = false) => {
     if (isPaid) {
-      if (dailyQuota?.remaining === 'unlimited') return 'Unlimited searches';
-      return `${dailyQuota?.remaining ?? 20} searches left today`;
+      if (dailyQuota?.remaining === 'unlimited') return isCompact ? 'Unlimited' : 'Unlimited searches';
+      return isCompact ? `${dailyQuota?.remaining ?? 20} left` : `${dailyQuota?.remaining ?? 20} searches left today`;
     }
-    if (!trial) return 'Free trial: 1 search and 1 analysis remaining';
+    if (!trial) return isCompact ? 'Trial: 1 search, 1 audit' : 'Free trial: 1 search and 1 analysis remaining';
     const sRem = trial.searchesRemaining ?? 0;
     const aRem = trial.analysesRemaining ?? 0;
     if (sRem === 0 && aRem === 0) {
       return 'Trial used';
     }
     if (sRem > 0 && aRem > 0) {
-      return 'Free trial: 1 search and 1 analysis remaining';
+      return isCompact ? 'Trial: 1 search, 1 audit' : 'Free trial: 1 search and 1 analysis remaining';
     }
     if (sRem > 0) {
-      return 'Free trial: 1 search remaining';
+      return isCompact ? 'Trial: 1 search' : 'Free trial: 1 search remaining';
     }
-    return 'Free trial: 1 analysis remaining';
+    return isCompact ? 'Trial: 1 audit' : 'Free trial: 1 analysis remaining';
   };
 
   return (
@@ -67,19 +68,9 @@ export default function Layout({
           borderBottom: '1px solid var(--border-subtle)'
         }}
       >
-        <div
-          style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '12px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px'
-          }}
-        >
+        <div className="header-container">
           {/* Left: Brand & Sidebar toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {user && (
               <button
                 type="button"
@@ -111,7 +102,7 @@ export default function Layout({
             {/* Brand Logo */}
             <div
               onClick={() => setActiveTab && setActiveTab('scraper')}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
             >
               <div
                 style={{
@@ -123,7 +114,8 @@ export default function Layout({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--accent-pink)'
+                  color: 'var(--accent-pink)',
+                  flexShrink: 0
                 }}
               >
                 <Instagram size={18} />
@@ -132,14 +124,14 @@ export default function Layout({
                 <span style={{ fontSize: '1.05rem', fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>
                   InstaScrape
                 </span>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span className="brand-badge">
                   Platform
                 </span>
               </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <nav style={{ display: 'flex', gap: '4px', marginLeft: '12px' }}>
+            {/* Desktop Navigation Tabs */}
+            <nav className="desktop-nav" aria-label="Desktop Navigation">
               <button
                 type="button"
                 onClick={() => {
@@ -179,7 +171,7 @@ export default function Layout({
           </div>
 
           {/* Right: Auth, Plan status, Theme toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Usage Meter for logged in users */}
             {user && (
               <span
@@ -189,21 +181,23 @@ export default function Layout({
                   padding: '4px 10px',
                   background: isPaid ? 'rgba(255, 255, 255, 0.04)' : (trial?.isTrialExhausted ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.04)'),
                   borderRadius: 'var(--radius-full)',
-                  border: isPaid ? '1px solid var(--border-subtle)' : (trial?.isTrialExhausted ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid var(--border-subtle)')
+                  border: isPaid ? '1px solid var(--border-subtle)' : (trial?.isTrialExhausted ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid var(--border-subtle)'),
+                  whiteSpace: 'nowrap'
                 }}
                 title={isPaid ? "Paid quota" : "Trial status"}
               >
-                {getUsageMeterText()}
+                <span className="meter-desktop">{getUsageMeterText(false)}</span>
+                <span className="meter-mobile">{getUsageMeterText(true)}</span>
               </span>
             )}
 
             {/* Guest Action: Plans + Sign In + Sign Up */}
             {isGuest ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <button
                   type="button"
                   onClick={onOpenUpgrade}
-                  className="btn btn-secondary"
+                  className="btn btn-secondary btn-hide-mobile"
                   style={{ fontSize: '0.8rem', padding: '6px 14px' }}
                 >
                   <Sparkles size={13} style={{ color: 'var(--accent-pink)' }} /> Plans
@@ -212,7 +206,7 @@ export default function Layout({
                   type="button"
                   onClick={() => onOpenAuth('signin')}
                   className="btn btn-ghost"
-                  style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                  style={{ fontSize: '0.8rem', padding: '6px 10px' }}
                 >
                   Sign In
                 </button>
@@ -220,20 +214,20 @@ export default function Layout({
                   type="button"
                   onClick={() => onOpenAuth('signup')}
                   className="btn btn-primary"
-                  style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                  style={{ fontSize: '0.8rem', padding: '6px 12px' }}
                 >
                   Sign Up
                 </button>
               </div>
             ) : (
               /* Authenticated User Status */
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {isPaid ? (
                   <span
                     className="chip chip-active"
                     style={{
                       fontSize: '0.72rem',
-                      padding: '3px 10px',
+                      padding: '3px 8px',
                       background: 'rgba(225, 48, 108, 0.15)',
                       borderColor: 'var(--accent-pink)',
                       color: 'var(--accent-pink)',
@@ -247,7 +241,7 @@ export default function Layout({
                     type="button"
                     onClick={onOpenUpgrade}
                     className="btn btn-primary"
-                    style={{ fontSize: '0.75rem', padding: '5px 12px' }}
+                    style={{ fontSize: '0.75rem', padding: '5px 10px' }}
                   >
                     <Sparkles size={13} /> Upgrade
                   </button>
@@ -256,7 +250,7 @@ export default function Layout({
                 <button
                   type="button"
                   onClick={() => setActiveTab('account')}
-                  className="btn btn-ghost"
+                  className="btn btn-ghost btn-hide-mobile"
                   style={{ padding: '6px 10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
                   title="My Account"
                 >
@@ -287,7 +281,7 @@ export default function Layout({
                 className="btn btn-ghost"
                 style={{
                   fontSize: '0.78rem',
-                  padding: '5px 10px',
+                  padding: '5px 8px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-subtle)',
                   background: 'var(--bg-surface-elevated)',
@@ -299,7 +293,7 @@ export default function Layout({
                 title="Open Undercover Mode Guide"
               >
                 <EyeOff size={14} style={{ color: 'var(--accent-pink)' }} />
-                <span style={{ fontWeight: 600 }}>Undercover Mode</span>
+                <span className="undercover-btn-text" style={{ fontWeight: 600 }}>Undercover Mode</span>
               </button>
             )}
 
@@ -307,6 +301,45 @@ export default function Layout({
             <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
           </div>
         </div>
+
+        {/* Mobile Navigation Tabs (Segmented bar right below header for phones) */}
+        <nav className="mobile-subnav" aria-label="Mobile Navigation">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('scraper');
+              window.history.pushState(null, '', '/');
+            }}
+            className={`mobile-nav-tab ${activeTab === 'scraper' ? 'active' : ''}`}
+          >
+            <Search size={15} />
+            <span>Search</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('analyzer');
+              window.history.pushState(null, '', '/analyzer');
+            }}
+            className={`mobile-nav-tab ${activeTab === 'analyzer' ? 'active' : ''}`}
+          >
+            <Sparkles size={15} />
+            <span>Analyzer</span>
+          </button>
+          {user && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('account');
+                window.history.pushState(null, '', '/account');
+              }}
+              className={`mobile-nav-tab ${activeTab === 'account' ? 'active' : ''}`}
+            >
+              <User size={15} />
+              <span>Account</span>
+            </button>
+          )}
+        </nav>
       </header>
 
       {/* Main App Content */}

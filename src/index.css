@@ -306,3 +306,129 @@ h1, h2, h3, h4, h5, h6 {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==============================================================================
+   RESPONSIVE NAVBAR & MOBILE NAVIGATION SYSTEM
+   ============================================================================== */
+
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand-badge {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+}
+
+.mobile-subnav {
+  display: none;
+}
+
+.meter-desktop {
+  display: inline;
+}
+
+.meter-mobile {
+  display: none;
+}
+
+.undercover-btn-text {
+  display: inline;
+}
+
+.card-responsive-padding {
+  padding: 24px 28px;
+}
+
+/* Mobile Breakpoint: Tablets & Phones (<= 768px) */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .brand-badge {
+    display: none !important;
+  }
+
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-subnav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-subtle);
+    padding: 6px 10px;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .mobile-nav-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+  }
+
+  .mobile-nav-tab.active {
+    background: rgba(225, 48, 108, 0.12);
+    color: var(--accent-pink);
+    border-color: rgba(225, 48, 108, 0.35);
+  }
+
+  .meter-desktop {
+    display: none !important;
+  }
+
+  .meter-mobile {
+    display: inline !important;
+  }
+
+  .undercover-btn-text {
+    display: none !important;
+  }
+
+  .btn-hide-mobile {
+    display: none !important;
+  }
+
+  .card-responsive-padding {
+    padding: 16px 14px !important;
+  }
+
+  main {
+    padding: 16px 12px !important;
+  }
+}
+

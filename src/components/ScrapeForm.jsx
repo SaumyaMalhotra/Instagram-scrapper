@@ -155,9 +155,8 @@ export default function ScrapeForm({
 
   return (
     <div
-      className="glass-panel"
+      className="glass-panel card-responsive-padding"
       style={{
-        padding: '24px 28px',
         marginBottom: '28px',
         maxWidth: '880px',
         margin: '0 auto 28px auto'

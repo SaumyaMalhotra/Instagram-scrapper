@@ -384,11 +384,11 @@ export default function ProfileAnalyzer({
       {/* Input Form with Inline Validation */}
       <form
         onSubmit={handleAnalyzeSubmit}
+        className="card-responsive-padding"
         style={{
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-md)',
-          padding: '20px',
           marginBottom: '32px'
         }}
       >
